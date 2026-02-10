@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Body Compass</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #FDF1E6 0%, #FFD2F0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(255, 85, 1, 0.15);
+            max-width: 600px;
+            width: 100%;
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #FF5501 0%, #FF8529 100%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #FF5501;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #FFD2F0;
+            border-radius: 10px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF5501 0%, #FF8529 100%);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        .question-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 32px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #DEADF6;
+            border-radius: 16px;
+            padding: 20px 24px;
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            background: #FDF1E6;
+            border-color: #FF8529;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 85, 1, 0.2);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            display: none;
+            text-align: center;
+        }
+
+        .result-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #FF5501;
+            margin-bottom: 16px;
+        }
+
+        .result-text {
+            font-size: 20px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: #FDF1E6;
+            border-radius: 16px;
+            border-left: 4px solid #FF5501;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #FF5501 0%, #FF8529 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 85, 1, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: white;
+            color: #FF5501;
+            border: 2px solid #FF5501;
+        }
+
+        .action-btn.secondary:hover {
+            background: #FDF1E6;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            color: #FF5501;
+        }
+
+        .back-btn.visible {
+            display: flex;
+        }
+
+        #emailModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #emailModal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .modal-content h3 {
+            color: #FF5501;
+            margin-bottom: 16px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #DEADF6;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #FF5501;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .question {
+                font-size: 20px;
+            }
+
+            .option-btn {
+                font-size: 16px;
+                padding: 16px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Dream Body Compass</h1>
+            <p>Get your personalised calorie guidance in under 2 minutes</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <button class="back-btn" id="backBtn" onclick="goBack()">
+            ← Back
+        </button>
+
+        <!-- Initial Screening -->
+        <div class="question-container active" id="q0">
+            <div class="question">Where are you in your journey?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q0', 'finished')">Just finished my 8-week program</button>
+                <button class="option-btn" onclick="answer('q0', 'building')">Currently in a build phase</button>
+                <button class="option-btn" onclick="answer('q0', '1200')">On the 1200 calorie plan</button>
+                <button class="option-btn" onclick="answer('q0', 'unsure')">None of the above / I'm not sure</button>
+            </div>
+        </div>
+
+        <!-- Question 1 -->
+        <div class="question-container" id="q1">
+            <div class="question">Are you at your goal weight?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q1', 'yes')">Yes</button>
+                <button class="option-btn" onclick="answer('q1', 'no')">No</button>
+            </div>
+        </div>
+
+        <!-- Question 1b (if No to Q1 and came from "finished program") -->
+        <div class="question-container" id="q1b">
+            <div class="question">What would you like to do next?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q1b', 'cut')">Keep losing weight (continue cutting)</button>
+                <button class="option-btn" onclick="answer('q1b', 'maintain')">Stop losing and maintain my weight</button>
+            </div>
+        </div>
+
+        <!-- Question 2 (if Yes to Q1) -->
+        <div class="question-container" id="q2">
+            <div class="question">Have you been reverse dieting for 16+ weeks?<br><span style="font-size: 16px; font-weight: 400; color: #666;">(An intentional increase in calories)</span></div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q2', 'yes')">Yes</button>
+                <button class="option-btn" onclick="answer('q2', 'no')">No</button>
+            </div>
+        </div>
+
+        <!-- Question 3 (if Yes to Q2) -->
+        <div class="question-container" id="q3">
+            <div class="question">What is your next goal?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q3', 'maintain')">Maintain</button>
+                <button class="option-btn" onclick="answer('q3', 'cut')">Cut Again</button>
+                <button class="option-btn" onclick="answer('q3', 'build')">Build</button>
+            </div>
+        </div>
+
+        <!-- Question 4 (if No to Q2) -->
+        <div class="question-container" id="q4">
+            <div class="question">How did your scale weight change this week?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q4', 'maintained-decreased')">Stayed the same or decreased</button>
+                <button class="option-btn" onclick="answer('q4', 'increased')">Increased</button>
+            </div>
+        </div>
+
+        <!-- Question 4b (if increased in Q4) -->
+        <div class="question-container" id="q4b">
+            <div class="question">Let's check if this weight gain is normal</div>
+            <div class="options">
+                <button class="option-btn" onclick="showCalculator('reverse')">Calculate My Weekly Gain</button>
+            </div>
+        </div>
+
+        <!-- Question 4c (if gain above 0.3% in reverse diet) -->
+        <div class="question-container" id="q4c">
+            <div class="question">Were you more than 80% adherent to the plan?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q4c', 'yes')">Yes</button>
+                <button class="option-btn" onclick="answer('q4c', 'no')">No</button>
+            </div>
+        </div>
+
+        <!-- Question 5 (if Build selected in Q3) -->
+        <div class="question-container" id="q5">
+            <div class="question">Let's check your weekly weight gain progress</div>
+            <div class="options">
+                <button class="option-btn" onclick="showCalculator('build')">Calculate My Weekly Gain</button>
+            </div>
+        </div>
+
+        <!-- Calculator -->
+        <div class="question-container" id="calculator">
+            <div class="question">Let's calculate your weekly weight gain</div>
+            <div style="text-align: left; margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 8px; color: #666; font-size: 14px;">What was your average weight last week? (kg)</label>
+                <input type="number" id="lastWeekWeight" placeholder="e.g., 65" step="0.1" style="width: 100%; padding: 12px; border: 2px solid #DEADF6; border-radius: 8px; font-size: 16px; margin-bottom: 20px;">
+                
+                <label style="display: block; margin-bottom: 8px; color: #666; font-size: 14px;">What is your average weight this week? (kg)</label>
+                <input type="number" id="thisWeekWeight" placeholder="e.g., 65.2" step="0.1" style="width: 100%; padding: 12px; border: 2px solid #DEADF6; border-radius: 8px; font-size: 16px; margin-bottom: 24px;">
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="calculateWeightGain()" style="background: linear-gradient(135deg, #FF5501 0%, #FF8529 100%); color: white; border: none;">Calculate My Gain %</button>
+            </div>
+        </div>
+
+        <!-- Calculator Result -->
+        <div class="question-container" id="calcResult">
+            <div class="question">Your Weekly Weight Gain</div>
+            <div style="background: #FDF1E6; padding: 24px; border-radius: 16px; border-left: 4px solid #FF5501; margin-bottom: 24px;">
+                <div style="font-size: 32px; font-weight: 700; color: #FF5501; margin-bottom: 8px;" id="gainPercentage"></div>
+                <div style="font-size: 18px; color: #333; margin-bottom: 16px;" id="gainStatus"></div>
+                <div style="font-size: 16px; color: #666;" id="gainExplanation"></div>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="continueFromCalculator()" style="background: linear-gradient(135deg, #FF5501 0%, #FF8529 100%); color: white; border: none;">Continue to My Plan</button>
+            </div>
+        </div>
+
+        <!-- Question 6 (if No to Q1) -->
+        <div class="question-container" id="q6">
+            <div class="question">Have you been on the 1200 calorie plan for 4+ weeks?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q6', 'yes')">Yes</button>
+                <button class="option-btn" onclick="answer('q6', 'no')">No</button>
+            </div>
+        </div>
+
+        <!-- Question 7 (if Yes to Q6) -->
+        <div class="question-container" id="q7">
+            <div class="question">Add 100 calories - Transition to Reverse Diet</div>
+            <div class="options">
+                <button class="option-btn" onclick="showResult('Add 100 calories', 'Transition to Reverse Diet')">Continue</button>
+            </div>
+        </div>
+
+        <!-- Question 8 (if No to Q6) -->
+        <div class="question-container" id="q8">
+            <div class="question">Have you hit a true plateau? (No change in 2+ weeks)</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q8', 'yes')">Yes</button>
+                <button class="option-btn" onclick="answer('q8', 'no')">No</button>
+            </div>
+        </div>
+
+        <!-- Result Container -->
+        <div class="result-container" id="result">
+            <div class="result-icon">🎯</div>
+            <div class="result-title">Your Personalized Plan</div>
+            <div class="result-text" id="resultText"></div>
+            <div class="result-actions">
+                <button class="action-btn" onclick="emailResult()">📧 Email Results</button>
+                <button class="action-btn secondary" onclick="copyResult()">📋 Copy to Clipboard</button>
+                <button class="action-btn secondary" onclick="restart()">🔄 Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="emailModal">
+        <div class="modal-content">
+            <h3>Email Your Results</h3>
+            <input type="email" id="emailInput" placeholder="Enter your email address">
+            <div class="result-actions">
+                <button class="action-btn" onclick="sendEmail()">Send</button>
+                <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let history = [];
+        let currentResult = '';
+        let totalQuestions = 8;
+        let calculatedGainType = ''; // Store calculator result
+        let calculatorMode = ''; // 'build' or 'reverse'
+
+        function updateProgress() {
+            const progress = (history.length / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Show/hide back button
+            if (history.length > 0) {
+                document.getElementById('backBtn').classList.add('visible');
+            } else {
+                document.getElementById('backBtn').classList.remove('visible');
+            }
+        }
+
+        function hideAll() {
+            document.querySelectorAll('.question-container').forEach(q => {
+                q.classList.remove('active');
+            });
+            document.getElementById('result').classList.remove('active');
+        }
+
+        function show(elementId) {
+            hideAll();
+            document.getElementById(elementId).classList.add('active');
+        }
+
+        function showCalculator(mode) {
+            calculatorMode = mode;
+            history.push({question: mode === 'build' ? 'q5' : 'q4b', answer: 'calculator'});
+            updateProgress();
+            show('calculator');
+        }
+
+        function calculateWeightGain() {
+            const lastWeek = parseFloat(document.getElementById('lastWeekWeight').value);
+            const thisWeek = parseFloat(document.getElementById('thisWeekWeight').value);
+
+            if (!lastWeek || !thisWeek) {
+                alert('Please enter both weights');
+                return;
+            }
+
+            const gain = thisWeek - lastWeek;
+            const percentage = (gain / lastWeek) * 100;
+
+            document.getElementById('gainPercentage').textContent = percentage.toFixed(2) + '%';
+
+            let status, explanation, gainType;
+            
+            if (calculatorMode === 'build') {
+                // Build phase: 0.3% - 0.5% is ideal
+                if (percentage < 0.3) {
+                    status = 'Too Low';
+                    explanation = 'Your weekly gain is below 0.3%. You should increase calories by 100.';
+                    gainType = 'low';
+                    document.getElementById('gainStatus').style.color = '#FF5501';
+                } else if (percentage >= 0.3 && percentage <= 0.5) {
+                    status = 'On Track! 🎯';
+                    explanation = 'Perfect! Your weekly gain is between 0.3% - 0.5%. Stay at current calories.';
+                    gainType = 'track';
+                    document.getElementById('gainStatus').style.color = '#10B981';
+                } else {
+                    status = 'Too High';
+                    explanation = 'Your weekly gain is above 0.5%. You should decrease calories by 50.';
+                    gainType = 'high';
+                    document.getElementById('gainStatus').style.color = '#FF5501';
+                }
+            } else {
+                // Reverse diet phase: 0.3% or below needs increase, above 0.3% checks adherence
+                if (percentage <= 0.3) {
+                    status = 'Normal & Healthy! 🎯';
+                    explanation = 'Your gain is 0.3% or below. This means you should add 100 calories and keep progressing with your reverse diet.';
+                    gainType = 'normal';
+                    document.getElementById('gainStatus').style.color = '#10B981';
+                } else {
+                    status = 'Above Expected';
+                    explanation = 'Your weekly gain is above 0.3%. Let\'s check your adherence to see if we need to adjust.';
+                    gainType = 'high';
+                    document.getElementById('gainStatus').style.color = '#FF5501';
+                }
+            }
+
+            document.getElementById('gainStatus').textContent = status;
+            document.getElementById('gainExplanation').textContent = explanation;
+            calculatedGainType = gainType;
+
+            show('calcResult');
+        }
+
+        function continueFromCalculator() {
+            // Use the calculated gain type to show the appropriate result
+            if (calculatorMode === 'build') {
+                if (calculatedGainType === 'low') {
+                    showResult('Increase calories by 100', 'Increase Building Rate');
+                } else if (calculatedGainType === 'track') {
+                    showResult('Stay at current calories', 'Perfect Building Progress');
+                } else {
+                    showResult('Decrease calories by 50', 'Slow Down Building Rate');
+                }
+            } else {
+                // Reverse diet mode
+                if (calculatedGainType === 'normal') {
+                    showResult('Add 100 calories', 'Continue Reverse Dieting - Healthy Progress');
+                } else {
+                    // Gain is above 0.3%, need to check adherence
+                    show('q4c');
+                }
+            }
+        }
+
+        function answer(currentQ, choice) {
+            history.push({question: currentQ, answer: choice});
+            updateProgress();
+
+            // Question flow logic based on the blueprint
+            if (currentQ === 'q0') {
+                if (choice === 'finished') {
+                    show('q1');
+                } else if (choice === 'building') {
+                    show('q5'); // Go straight to weekly weight gain tracking
+                } else if (choice === '1200') {
+                    show('q6');
+                } else if (choice === 'unsure') {
+                    show('q1'); // Route to goal weight question to figure out their path
+                }
+            } else if (currentQ === 'q1') {
+                if (choice === 'yes') {
+                    show('q2');
+                } else {
+                    // Check if they came from "finished program" or "unsure"
+                    const previousAnswer = history[history.length - 2];
+                    if (previousAnswer && previousAnswer.question === 'q0' && previousAnswer.answer === 'finished') {
+                        show('q1b'); // Show the cutting vs maintenance question
+                    } else {
+                        show('q6'); // For "unsure" path, go to 1200 cal questions
+                    }
+                }
+            } else if (currentQ === 'q1b') {
+                if (choice === 'cut') {
+                    show('q8'); // Route to plateau/cutting questions
+                } else {
+                    showResult('Start reverse diet - Add 100 calories or decrease 1,000 steps', 'Transition to Maintenance');
+                }
+            } else if (currentQ === 'q2') {
+                if (choice === 'yes') {
+                    show('q3');
+                } else {
+                    show('q4');
+                }
+            } else if (currentQ === 'q3') {
+                if (choice === 'maintain') {
+                    showResult('Stay at these calories', 'Maintenance Phase');
+                } else if (choice === 'cut') {
+                    showResult('Decrease 100 calories or increase steps by 1,000', 'Cutting Phase');
+                } else if (choice === 'build') {
+                    showResult('Increase calories by 100', 'Building Phase - Enter Growth Phase');
+                }
+            } else if (currentQ === 'q4') {
+                if (choice === 'maintained-decreased') {
+                    showResult('Add 100 calories', 'Continue Reverse Dieting');
+                } else if (choice === 'increased') {
+                    show('q4b');
+                }
+            } else if (currentQ === 'q4c') {
+                if (choice === 'yes') {
+                    showResult('Decrease by 50 calories', 'Slow Down Reverse Diet');
+                } else {
+                    showResult('Stay at same calories', 'Weight Gain Likely From Inconsistency');
+                }
+            } else if (currentQ === 'q6') {
+                if (choice === 'yes') {
+                    show('q7');
+                } else {
+                    show('q8');
+                }
+            } else if (currentQ === 'q8') {
+                if (choice === 'yes') {
+                    showResult('Drop 100 calories or add 1,000 steps', 'Break Through Plateau');
+                } else {
+                    showResult('Stay on calories and trust the process', 'Continue Current Plan');
+                }
+            }
+        }
+
+        function showResult(action, phase) {
+            currentResult = `${phase}\n\n${action}\n\nCheck again next week`;
+            document.getElementById('resultText').innerHTML = currentResult.replace(/\n/g, '<br>');
+            show('result');
+        }
+
+        function goBack() {
+            if (history.length === 0) return;
+            
+            const current = history[history.length - 1];
+            history.pop();
+            updateProgress();
+
+            if (history.length === 0) {
+                show('q0');
+            } else {
+                const last = history[history.length - 1];
+                // Navigate to the appropriate question based on history
+                if (last.question === 'q0') {
+                    if (last.answer === 'finished') show('q1');
+                    else if (last.answer === 'building') show('q5');
+                    else if (last.answer === '1200') show('q6');
+                    else if (last.answer === 'unsure') show('q1');
+                } else if (last.question === 'q1') {
+                    if (last.answer === 'yes') show('q2');
+                    else {
+                        // Check if they came from finished program
+                        const beforeLast = history[history.length - 2];
+                        if (beforeLast && beforeLast.question === 'q0' && beforeLast.answer === 'finished') {
+                            show('q1b');
+                        } else {
+                            show('q6');
+                        }
+                    }
+                } else if (last.question === 'q1b') {
+                    if (last.answer === 'cut') show('q8');
+                    else show('q1b');
+                } else if (last.question === 'q2') {
+                    if (last.answer === 'yes') show('q3');
+                    else show('q4');
+                } else if (last.question === 'q4') {
+                    if (last.answer === 'maintained-decreased') {
+                        show('q4');
+                    } else {
+                        show('q4b');
+                    }
+                } else if (last.question === 'q4b' && current.answer === 'calculator') {
+                    show('calculator');
+                } else if (last.question === 'q5' && current.answer === 'calculator') {
+                    show('calculator');
+                } else if (last.question === 'q6') {
+                    if (last.answer === 'yes') show('q7');
+                    else show('q8');
+                } else {
+                    show(last.question);
+                }
+            }
+        }
+
+        function emailResult() {
+            document.getElementById('emailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('emailModal').classList.remove('active');
+            document.getElementById('emailInput').value = '';
+        }
+
+        function sendEmail() {
+            const email = document.getElementById('emailInput').value;
+            if (!email) {
+                alert('Please enter your email address');
+                return;
+            }
+
+            // Create mailto link
+            const subject = encodeURIComponent('My Dream Body Compass Results');
+            const body = encodeURIComponent(currentResult);
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+            
+            closeModal();
+            alert('Opening your email client...');
+        }
+
+        function copyResult() {
+            navigator.clipboard.writeText(currentResult).then(() => {
+                alert('Results copied to clipboard! ✅');
+            }).catch(err => {
+                alert('Could not copy text: ' + err);
+            });
+        }
+
+        function restart() {
+            history = [];
+            currentResult = '';
+            calculatedGainType = '';
+            calculatorMode = '';
+            document.getElementById('lastWeekWeight').value = '';
+            document.getElementById('thisWeekWeight').value = '';
+            updateProgress();
+            show('q0');
+        }
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>
